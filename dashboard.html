@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Super Admin Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:#f4f6f9;
+}
+
+.card{
+border:none;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+table{
+background:white;
+}
+
+</style>
+
+</head>
+
+<body>
+  <script>
+
+if(
+localStorage.getItem("adminLogin")
+!== "true"
+){
+
+window.location.href =
+"login.html";
+
+}
+
+  </script>
+  <button
+class="btn btn-danger"
+onclick="logout()">
+Logout
+  </button>
+  <script>
+
+function logout(){
+
+localStorage.removeItem(
+"adminLogin"
+);
+
+window.location.href =
+"login.html";
+
+}
+
+  </script>
+
+<div class="container-fluid p-4">
+
+<h2 class="mb-4 text-center">
+MCQ Super Admin Dashboard
+</h2>
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-3">
+<div class="card p-3">
+<h5>Total Students</h5>
+<h2 id="totalStudents">0</h2>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h5>Total Attempts</h5>
+<h2 id="totalAttempts">0</h2>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h5>Average Score</h5>
+<h2 id="averageScore">0%</h2>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h5>Highest Score</h5>
+<h2 id="highestScore">0%</h2>
+</div>
+</div>
+
+</div>
+
+<div class="row mb-3">
+
+<div class="col-md-4">
+<input
+type="text"
+class="form-control"
+id="searchBox"
+placeholder="Search Student">
+</div>
+
+<div class="col-md-8 text-end">
+
+<button
+class="btn btn-success"
+onclick="exportExcel()">
+Export Excel
+</button>
+
+<button
+class="btn btn-danger"
+onclick="exportPDF()">
+Export PDF
+</button>
+
+</div>
+
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-bordered table-striped">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>Name</th>
+<th>Course</th>
+<th>Total</th>
+<th>Correct</th>
+<th>Wrong</th>
+<th>%</th>
+<th>Grade</th>
+<th>Date</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tableData">
+
+</tbody>
+
+</table>
+
+</div>
+
+<h3 class="mt-5">
+Topper List
+</h3>
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Rank</th>
+<th>Name</th>
+<th>Percentage</th>
+</tr>
+
+</thead>
+
+<tbody id="topperTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs,
+deleteDoc,
+doc
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ8Od1KTOFTNL2yUN72Fxv1EFWRFZaid4",
+  authDomain: "mcq-test-ee55a.firebaseapp.com",
+  projectId: "mcq-test-ee55a",
+  storageBucket: "mcq-test-ee55a.firebasestorage.app",
+  messagingSenderId: "966944827158",
+  appId: "1:966944827158:web:2d0b89ead01a1c68ebd237",
+  measurementId: "G-Y3F5VFX2XT"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+let allData = [];
+
+async function loadData(){
+
+const snapshot =
+await getDocs(collection(db,"quizResults"));
+
+let html = "";
+
+allData = [];
+
+let totalScore = 0;
+let highestScore = 0;
+
+const uniqueStudents = new Set();
+
+snapshot.forEach((document)=>{
+
+const d = document.data();
+
+allData.push({
+id: document.id,
+...d
+});
+
+uniqueStudents.add(d.studentName);
+
+const score =
+parseFloat(
+String(d.percentage || 0).replace("%","")
+);
+
+totalScore += isNaN(score) ? 0 : score;
+
+if(score > highestScore){
+
+highestScore = score;
+
+}
+
+html += `
+
+<tr>
+
+<td>${d.studentName}</td>
+<td>${d.courseName}</td>
+<td>${d.totalQuestions}</td>
+<td>${d.correctAnswers}</td>
+<td>${d.wrongAnswers}</td>
+<td>${d.percentage}%</td>
+<td>${d.grade}</td>
+<td>${d.date}</td>
+
+<td>
+
+<button
+class="btn btn-danger btn-sm"
+onclick="deleteRecord('${document.id}')">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("tableData").innerHTML = html;
+
+document.getElementById("totalStudents").innerText =
+uniqueStudents.size;
+
+document.getElementById("totalAttempts").innerText =
+allData.length;
+
+const avgScore =
+allData.length > 0
+?
+(totalScore / allData.length).toFixed(2)
+:
+0;
+
+document.getElementById("averageScore").innerText =
+avgScore + "%";
+
+document.getElementById("highestScore").innerText =
+highestScore + "%";
+
+loadTopperList();
+
+}
+
+window.deleteRecord = async function(id){
+
+if(confirm("Delete Record ?")){
+
+await deleteDoc(doc(db,"quizResults",id));
+
+loadData();
+
+}
+
+}
+
+function loadTopperList(){
+
+const sorted =
+[...allData].sort((a,b)=>{
+
+const p1 =
+parseFloat(String(a.percentage || 0).replace("%",""));
+
+const p2 =
+parseFloat(String(b.percentage || 0).replace("%",""));
+
+return p2 - p1;
+
+});
+
+let html="";
+
+sorted.slice(0,10).forEach((student,index)=>{
+
+html += `
+<tr>
+<td>${index+1}</td>
+<td>${student.studentName}</td>
+<td>${student.percentage}%</td>
+</tr>
+`;
+
+});
+
+document.getElementById("topperTable").innerHTML = html;
+
+}
+
+window.exportExcel = function(){
+
+const ws =
+XLSX.utils.json_to_sheet(allData);
+
+const wb =
+XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+"Results"
+);
+
+XLSX.writeFile(
+wb,
+"results.xlsx"
+);
+
+}
+
+window.exportPDF = function(){
+
+const { jsPDF } = window.jspdf;
+
+const docPDF = new jsPDF();
+
+docPDF.text(
+"MCQ Report",
+20,
+20
+);
+
+docPDF.save("report.pdf");
+
+}
+
+document
+.getElementById("searchBox")
+.addEventListener("keyup",function(){
+
+let value =
+this.value.toLowerCase();
+
+let rows =
+document.querySelectorAll("#tableData tr");
+
+rows.forEach((row)=>{
+
+row.style.display =
+row.innerText.toLowerCase().includes(value)
+?
+""
+:
+"none";
+
+});
+
+});
+
+loadData();
+
+</script>
+
+</body>
+</html>

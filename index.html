@@ -1,0 +1,3126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #4338ca;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --text: #1f2937;
+            --border: #dbeafe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+            background: linear-gradient(135deg,
+                    #dbeafe,
+                    #ede9fe,
+                    #fce7f3);
+
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+            user-select:none;
+            -webkit-user-select:none;
+            -moz-user-select:none;
+            -ms-user-select:none;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+
+            background: rgba(255, 255, 255, .95);
+
+            backdrop-filter: blur(10px);
+
+            border-radius: 20px;
+
+            padding: 30px;
+
+            box-shadow:
+                0 10px 30px rgba(79, 70, 229, .15),
+                0 5px 15px rgba(0, 0, 0, .08);
+        }
+
+        .question h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .question p {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        label {
+            flex: 1 1 45%;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 16px;
+
+            border: 2px solid #dbeafe;
+
+            border-radius: 12px;
+
+            background: linear-gradient(135deg,
+                    #ffffff,
+                    #f8fafc);
+
+            cursor: pointer;
+
+            transition: all .3s ease;
+
+            font-size: 1rem;
+            font-weight: 500;
+
+            color: var(--text);
+        }
+
+        label:hover {
+            border-color: #6366f1;
+
+            background: linear-gradient(135deg,
+                    #eef2ff,
+                    #f5f3ff);
+
+            transform: translateY(-3px);
+
+            box-shadow: 0 6px 15px rgba(99, 102, 241, .15);
+        }
+
+        input[type="radio"] {
+            transform: scale(1.2);
+            accent-color: #4f46e5;
+        }
+
+        label:has(input[type="radio"]:checked) {
+
+            border: 2px solid #4f46e5;
+
+            background: linear-gradient(135deg,
+                    #e0e7ff,
+                    #eef2ff);
+
+            box-shadow: 0 4px 12px rgba(79, 70, 229, .2);
+        }
+
+        .navigation {
+            margin-top: 30px;
+
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button {
+            min-width: 120px;
+
+            padding: 12px 20px;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: .3s;
+
+            color: white;
+        }
+
+        #prevBtn {
+            background: #6b7280;
+        }
+
+        #prevBtn:hover {
+            background: #4b5563;
+        }
+
+        #nextBtn {
+            background: linear-gradient(135deg,
+                    #4f46e5,
+                    #6366f1);
+        }
+
+        #nextBtn:hover {
+            background: linear-gradient(135deg,
+                    #4338ca,
+                    #4f46e5);
+        }
+
+        #submitBtn {
+            background: linear-gradient(135deg,
+                    #16a34a,
+                    #22c55e);
+        }
+
+        #submitBtn:hover {
+            background: linear-gradient(135deg,
+                    #15803d,
+                    #16a34a);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .result {
+            background: #f8fafc;
+
+            padding: 18px;
+
+            margin-bottom: 15px;
+
+            border-radius: 12px;
+
+            border-left: 6px solid var(--primary);
+
+            color: var(--text);
+
+            font-size: 18px;
+
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+        }
+
+        .answer {
+            margin-top: 8px;
+
+            font-size: 15px;
+
+            color: #4b5563;
+        }
+
+        hr {
+            margin: 15px 0;
+
+            border: none;
+
+            border-top: 1px solid #d1d5db;
+        }
+
+        /* Popup */
+
+        #popupOverlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            background: linear-gradient(rgba(79, 70, 229, .35),
+                    rgba(168, 85, 247, .35));
+
+            backdrop-filter: blur(6px);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            z-index: 9999;
+        }
+
+        #popupBox {
+
+            width: 420px;
+
+            background: linear-gradient(135deg,
+                    #ffffff,
+                    #f8fafc);
+
+            padding: 35px;
+
+            border-radius: 20px;
+
+            text-align: center;
+
+            border: 1px solid #e0e7ff;
+
+            box-shadow:
+                0 15px 40px rgba(79, 70, 229, .20);
+        }
+
+        #popupBox h2 {
+
+            color: #4f46e5;
+
+            margin-bottom: 20px;
+
+            font-size: 28px;
+        }
+
+        #popupBox input {
+
+            width: 100%;
+
+            padding: 14px;
+
+            margin: 10px 0;
+
+            border: 2px solid #dbeafe;
+
+            border-radius: 10px;
+
+            font-size: 16px;
+
+            transition: .3s;
+        }
+
+        #popupBox input:focus {
+
+            outline: none;
+
+            border-color: #4f46e5;
+
+            box-shadow: 0 0 10px rgba(79, 70, 229, .15);
+        }
+
+        #startQuizBtn {
+
+            width: 100%;
+
+            background: linear-gradient(135deg,
+                    #4f46e5,
+                    #7c3aed);
+
+            color: white;
+
+            border: none;
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            font-size: 17px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            margin-top: 12px;
+
+            transition: .3s;
+        }
+
+        #startQuizBtn:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow: 0 8px 20px rgba(79, 70, 229, .25);
+        }
+
+        @media(max-width:768px) {
+
+            .container {
+                padding: 20px;
+            }
+
+            .question h2 {
+                font-size: 1.4rem;
+            }
+
+            .question p {
+                font-size: 1.1rem;
+            }
+
+            .options {
+                flex-direction: column;
+            }
+
+            label {
+                flex: 1 1 100%;
+            }
+
+            #popupBox {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="popupOverlay">
+
+        <div id="popupBox">
+
+            <h2>Quiz Registration</h2>
+
+            <input type="text" id="username" placeholder="Enter Username">
+
+            <input type="text" id="course" value="Web Designing">
+
+            <button id="startQuizBtn">
+                Start Quiz
+            </button>
+
+        </div>
+
+    </div>
+    <div class="container" id="mainQuiz" style="display:none;">
+        <div id="quiz">
+        </div>
+        <div class="navigation">
+            <button id="prevBtn" disabled><span class="material-symbols-outlined">arrow_back_ios</span></button>
+            <button id="nextBtn"><span class="material-symbols-outlined">arrow_forward_ios</span></button>
+            <button id="submitBtn" class="hidden">Submit</button>
+        </div>
+    </div>
+    <script>
+        let studentName = "";
+        let courseName = "";
+         const questions = [
+            {
+
+question:"What is IoT? / IoT क्या है?",
+options:[
+"A. Internet of Things / इंटरनेट ऑफ थिंग्स",
+"B. Internet of Technology / इंटरनेट ऑफ टेक्नोलॉजी",
+"C. Internal Object Technology / इंटरनल ऑब्जेक्ट टेक्नोलॉजी",
+"D. Integrated Online Technology / इंटीग्रेटेड ऑनलाइन टेक्नोलॉजी"
+],
+answer:0
+},
+
+{
+question:"What does IoT stand for? / IoT का पूर्ण रूप क्या है?",
+options:[
+"A. Internet of Things / इंटरनेट ऑफ थिंग्स",
+"B. Internet of Technology / इंटरनेट ऑफ टेक्नोलॉजी",
+"C. Intelligent of Things / इंटेलिजेंट ऑफ थिंग्स",
+"D. International of Things / इंटरनेशनल ऑफ थिंग्स"
+],
+answer:0
+},
+
+{
+question:"Which device collects real world data? / वास्तविक दुनिया का डेटा कौन सा उपकरण एकत्र करता है?",
+options:[
+"A. Sensor / सेंसर",
+"B. Monitor / मॉनिटर",
+"C. Printer / प्रिंटर",
+"D. Speaker / स्पीकर"
+],
+answer:0
+},
+
+{
+question:"Which device performs physical action? / भौतिक कार्य करने वाला उपकरण कौन सा है?",
+options:[
+"A. Sensor / सेंसर",
+"B. Actuator / एक्ट्यूएटर",
+"C. Router / राउटर",
+"D. Server / सर्वर"
+],
+answer:1
+},
+
+{
+question:"Temperature is measured using? / तापमान मापने के लिए क्या उपयोग होता है?",
+options:[
+"A. Temperature Sensor / तापमान सेंसर",
+"B. Motion Sensor / मोशन सेंसर",
+"C. RFID / आरएफआईडी",
+"D. GPS / जीपीएस"
+],
+answer:0
+},
+
+{
+question:"Which sensor detects light? / प्रकाश को पहचानने वाला सेंसर कौन सा है?",
+options:[
+"A. LDR",
+"B. DHT11",
+"C. Ultrasonic",
+"D. PIR"
+],
+answer:0
+},
+
+{
+question:"Which sensor measures temperature and humidity? / तापमान और आर्द्रता मापने वाला सेंसर कौन सा है?",
+options:[
+"A. DHT11",
+"B. PIR",
+"C. LDR",
+"D. IR"
+],
+answer:0
+},
+
+{
+question:"Full form of RFID? / RFID का पूर्ण रूप क्या है?",
+options:[
+"A. Radio Frequency Identification",
+"B. Remote Frequency Identification",
+"C. Radio Fast Identification",
+"D. Random Frequency Identification"
+],
+answer:0
+},
+
+{
+question:"Which board is widely used in IoT? / IoT में सबसे अधिक उपयोग होने वाला बोर्ड कौन सा है?",
+options:[
+"A. Arduino Uno",
+"B. CRT Monitor",
+"C. Keyboard",
+"D. Mouse"
+],
+answer:0
+},
+
+{
+question:"Arduino Uno is based on? / Arduino Uno किस पर आधारित है?",
+options:[
+"ATmega328P",
+"ATmega16",
+"8051",
+"PIC16F877A"
+],
+answer:0
+},
+
+{
+question:"Which controller provides built-in Wi-Fi? / किस कंट्रोलर में इनबिल्ट Wi-Fi होता है?",
+options:[
+"ESP8266 NodeMCU",
+"Arduino Uno",
+"ATmega16",
+"8051"
+],
+answer:0
+},
+
+{
+question:"Which protocol is lightweight for IoT? / IoT के लिए हल्का प्रोटोकॉल कौन सा है?",
+options:[
+"MQTT",
+"FTP",
+"SMTP",
+"POP3"
+],
+answer:0
+},
+
+{
+question:"HTTP stands for? / HTTP का पूर्ण रूप क्या है?",
+options:[
+"Hyper Text Transfer Protocol",
+"High Text Transfer Protocol",
+"Hyper Transfer Technology Protocol",
+"Hyper Terminal Transfer Protocol"
+],
+answer:0
+},
+
+{
+question:"Which communication is short range? / कम दूरी का संचार कौन सा है?",
+options:[
+"Bluetooth",
+"Satellite",
+"Fiber",
+"DSL"
+],
+answer:0
+},
+
+{
+question:"Wi-Fi is mainly used for? / Wi-Fi मुख्यतः किसके लिए उपयोग होता है?",
+options:[
+"Wireless Internet",
+"Printing",
+"Scanning",
+"Typing"
+],
+answer:0
+},
+
+{
+question:"Which cloud platform is used in IoT? / IoT में कौन सा क्लाउड प्लेटफॉर्म उपयोग होता है?",
+options:[
+"ThingSpeak",
+"MS Paint",
+"Notepad",
+"WordPad"
+],
+answer:0
+},
+
+{
+question:"ThingSpeak is used to? / ThingSpeak का उपयोग किसलिए होता है?",
+options:[
+"Store Sensor Data",
+"Play Music",
+"Create Images",
+"Print Files"
+],
+answer:0
+},
+
+{
+question:"Which protocol is commonly used for web communication? / वेब संचार में कौन सा प्रोटोकॉल उपयोग होता है?",
+options:[
+"HTTP",
+"SMTP",
+"FTP",
+"POP3"
+],
+answer:0
+},
+
+{
+question:"Which network covers small area? / छोटा क्षेत्र कवर करने वाला नेटवर्क कौन सा है?",
+options:[
+"PAN",
+"WAN",
+"MAN",
+"Internet"
+],
+answer:0
+},
+
+{
+question:"Which network covers worldwide? / विश्वभर में फैला नेटवर्क कौन सा है?",
+options:[
+"WAN",
+"LAN",
+"PAN",
+"MAN"
+],
+answer:0
+},
+
+{
+question:"PIR sensor detects? / PIR सेंसर क्या पहचानता है?",
+options:[
+"Motion",
+"Temperature",
+"Humidity",
+"Pressure"
+],
+answer:0
+},
+
+{
+question:"Ultrasonic sensor measures? / Ultrasonic सेंसर क्या मापता है?",
+options:[
+"Distance",
+"Temperature",
+"Voltage",
+"Current"
+],
+answer:0
+},
+
+{
+question:"Which communication uses tags? / टैग का उपयोग किस तकनीक में होता है?",
+options:[
+"RFID",
+"Bluetooth",
+"Wi-Fi",
+"USB"
+],
+answer:0
+},
+
+{
+question:"GPS is used for? / GPS का उपयोग किसलिए होता है?",
+options:[
+"Location Tracking",
+"Temperature",
+"Humidity",
+"Sound"
+],
+answer:0
+},
+
+{
+question:"Cloud computing provides? / Cloud Computing क्या प्रदान करती है?",
+options:[
+"Online Storage and Services",
+"Keyboard",
+"Mouse",
+"Monitor"
+],
+answer:0
+},
+
+{
+question:"IoT devices communicate through? / IoT डिवाइस किसके माध्यम से संचार करते हैं?",
+options:[
+"Internet",
+"Paper",
+"Cable TV",
+"Printer"
+],
+answer:0
+},
+
+{
+question:"Which language is mostly used in Arduino? / Arduino में मुख्य रूप से कौन सी भाषा उपयोग होती है?",
+options:[
+"C/C++",
+"Java",
+"Python Only",
+"HTML"
+],
+answer:0
+},
+
+{
+question:"Which IDE is used for Arduino programming? / Arduino प्रोग्रामिंग के लिए कौन सा IDE उपयोग होता है?",
+options:[
+"Arduino IDE",
+"Photoshop",
+"Excel",
+"PowerPoint"
+],
+answer:0
+},
+
+{
+question:"Which is an example of Smart Home device? / Smart Home डिवाइस का उदाहरण कौन सा है?",
+options:[
+"Smart Bulb",
+"Notebook",
+"Pen",
+"Book"
+],
+answer:0
+},
+
+{
+question:"IoT connects? / IoT किसे जोड़ता है?",
+options:[
+"People, Devices and Internet / लोग, डिवाइस और इंटरनेट",
+"Only Computers / केवल कंप्यूटर",
+"Only Mobiles / केवल मोबाइल",
+"Only Servers / केवल सर्वर"
+],
+answer:0
+},
+             {
+question:"Which module provides Wi-Fi in IoT? / IoT में Wi-Fi कौन सा मॉड्यूल प्रदान करता है?",
+options:[
+"A. ESP8266",
+"B. 8051",
+"C. ATmega16",
+"D. LCD"
+],
+answer:0
+},
+
+{
+question:"ESP8266 is mainly used for? / ESP8266 मुख्य रूप से किस लिए उपयोग होता है?",
+options:[
+"A. Wi-Fi Communication / वाई-फाई संचार",
+"B. Printing / प्रिंटिंग",
+"C. Scanning / स्कैनिंग",
+"D. Audio Recording / ऑडियो रिकॉर्डिंग"
+],
+answer:0
+},
+
+{
+question:"NodeMCU is based on? / NodeMCU किस पर आधारित है?",
+options:[
+"A. ESP8266",
+"B. Arduino Mega",
+"C. Raspberry Pi",
+"D. AT89C51"
+],
+answer:0
+},
+
+{
+question:"Which IDE is used for NodeMCU programming? / NodeMCU प्रोग्रामिंग के लिए कौन सा IDE उपयोग होता है?",
+options:[
+"A. Arduino IDE",
+"B. MS Word",
+"C. Paint",
+"D. Photoshop"
+],
+answer:0
+},
+
+{
+question:"Which language is used in Arduino IDE? / Arduino IDE में कौन सी भाषा उपयोग होती है?",
+options:[
+"A. C/C++",
+"B. Java",
+"C. Python",
+"D. HTML"
+],
+answer:0
+},
+
+{
+question:"Which function runs only once? / कौन सा फ़ंक्शन केवल एक बार चलता है?",
+options:[
+"A. setup()",
+"B. loop()",
+"C. main()",
+"D. start()"
+],
+answer:0
+},
+
+{
+question:"Which function runs repeatedly? / कौन सा फ़ंक्शन बार-बार चलता है?",
+options:[
+"A. setup()",
+"B. loop()",
+"C. init()",
+"D. begin()"
+],
+answer:1
+},
+
+{
+question:"Correct syntax to declare LED pin? / LED Pin घोषित करने का सही Syntax कौन सा है?",
+options:[
+"A. int led=13;",
+"B. integer led=13;",
+"C. pin led=13;",
+"D. led int=13;"
+],
+answer:0
+},
+
+{
+question:"Which function sets pin mode? / Pin Mode सेट करने के लिए कौन सा Function उपयोग होता है?",
+options:[
+"A. pinMode()",
+"B. digitalWrite()",
+"C. analogRead()",
+"D. delay()"
+],
+answer:0
+},
+
+{
+question:"Correct syntax to make OUTPUT pin? / OUTPUT Pin बनाने का सही Syntax कौन सा है?",
+options:[
+"A. pinMode(13,OUTPUT);",
+"B. pinMode(OUTPUT,13);",
+"C. output(13);",
+"D. pinOutput(13);"
+],
+answer:0
+},
+
+{
+question:"Which function turns LED ON? / LED ON करने का Function कौन सा है?",
+options:[
+"A. digitalWrite(13,HIGH);",
+"B. digitalRead(13);",
+"C. analogRead(13);",
+"D. delay(13);"
+],
+answer:0
+},
+
+{
+question:"Which function turns LED OFF? / LED OFF करने का Function कौन सा है?",
+options:[
+"A. digitalWrite(13,LOW);",
+"B. digitalRead(13);",
+"C. analogWrite(13);",
+"D. pinMode(13);"
+],
+answer:0
+},
+
+{
+question:"Which function reads digital input? / Digital Input पढ़ने का Function कौन सा है?",
+options:[
+"A. digitalRead()",
+"B. digitalWrite()",
+"C. analogRead()",
+"D. analogWrite()"
+],
+answer:0
+},
+
+{
+question:"Which function reads analog input? / Analog Input पढ़ने का Function कौन सा है?",
+options:[
+"A. analogRead()",
+"B. digitalRead()",
+"C. digitalWrite()",
+"D. pinMode()"
+],
+answer:0
+},
+
+{
+question:"Which function writes analog output? / Analog Output देने का Function कौन सा है?",
+options:[
+"A. analogWrite()",
+"B. digitalRead()",
+"C. digitalWrite()",
+"D. pinMode()"
+],
+answer:0
+},
+
+{
+question:"delay(1000) means? / delay(1000) का क्या अर्थ है?",
+options:[
+"A. 1 Second",
+"B. 10 Seconds",
+"C. 100 Seconds",
+"D. 1000 Seconds"
+],
+answer:0
+},
+
+{
+question:"HIGH means? / HIGH का अर्थ क्या है?",
+options:[
+"A. Logic 1",
+"B. Logic 0",
+"C. Reset",
+"D. Stop"
+],
+answer:0
+},
+
+{
+question:"LOW means? / LOW का अर्थ क्या है?",
+options:[
+"A. Logic 0",
+"B. Logic 1",
+"C. Start",
+"D. Enable"
+],
+answer:0
+},
+
+{
+question:"Serial.begin(9600) is used for? / Serial.begin(9600) किसलिए उपयोग होता है?",
+options:[
+"A. Serial Communication",
+"B. LED Control",
+"C. LCD Display",
+"D. Wi-Fi"
+],
+answer:0
+},
+
+{
+question:"Which function prints on Serial Monitor? / Serial Monitor पर Print करने का Function कौन सा है?",
+options:[
+"A. Serial.println()",
+"B. print()",
+"C. println()",
+"D. cout"
+],
+answer:0
+},
+
+{
+question:"Which protocol follows Publish/Subscribe model? / Publish/Subscribe मॉडल किस Protocol में होता है?",
+options:[
+"A. MQTT",
+"B. HTTP",
+"C. FTP",
+"D. SMTP"
+],
+answer:0
+},
+
+{
+question:"MQTT stands for? / MQTT का पूर्ण रूप क्या है?",
+options:[
+"A. Message Queuing Telemetry Transport",
+"B. Multiple Queue Transfer Technology",
+"C. Mobile Query Transport",
+"D. Message Query Terminal Transfer"
+],
+answer:0
+},
+
+{
+question:"MQTT uses? / MQTT क्या उपयोग करता है?",
+options:[
+"A. Broker",
+"B. Compiler",
+"C. Interpreter",
+"D. Browser"
+],
+answer:0
+},
+
+{
+question:"ThingSpeak is developed by? / ThingSpeak किसके द्वारा विकसित किया गया है?",
+options:[
+"A. MathWorks",
+"B. Microsoft",
+"C. Google",
+"D. IBM"
+],
+answer:0
+},
+
+{
+question:"ThingSpeak stores? / ThingSpeak क्या Store करता है?",
+options:[
+"A. Sensor Data",
+"B. Music",
+"C. Video",
+"D. Documents"
+],
+answer:0
+},
+
+{
+question:"JSON stands for? / JSON का पूर्ण रूप क्या है?",
+options:[
+"A. JavaScript Object Notation",
+"B. Java Source Object Network",
+"C. Java Standard Output Name",
+"D. Java Server Object Node"
+],
+answer:0
+},
+
+{
+question:"REST API mainly uses? / REST API मुख्यतः किस Protocol का उपयोग करती है?",
+options:[
+"A. HTTP",
+"B. FTP",
+"C. SMTP",
+"D. POP3"
+],
+answer:0
+},
+
+{
+question:"Which method sends data? / Data भेजने के लिए कौन सा Method उपयोग होता है?",
+options:[
+"A. POST",
+"B. GET",
+"C. DELETE",
+"D. OPTIONS"
+],
+answer:0
+},
+
+{
+question:"Which method reads data? / Data पढ़ने के लिए कौन सा Method उपयोग होता है?",
+options:[
+"A. GET",
+"B. POST",
+"C. PUT",
+"D. PATCH"
+],
+answer:0
+},
+
+{
+question:"Which cloud service is free for IoT beginners? / शुरुआती IoT उपयोगकर्ताओं के लिए कौन सी Cloud Service मुफ्त है?",
+options:[
+"A. ThingSpeak",
+"B. Photoshop",
+"C. VLC",
+"D. Notepad"
+],
+answer:0
+},
+             {
+question:"Which operating system is commonly used in Raspberry Pi? / Raspberry Pi में सामान्यतः कौन सा Operating System उपयोग होता है?",
+options:[
+"A. Raspberry Pi OS",
+"B. Windows XP",
+"C. DOS",
+"D. Android Studio"
+],
+answer:0
+},
+
+{
+question:"Raspberry Pi is a? / Raspberry Pi क्या है?",
+options:[
+"A. Single Board Computer / सिंगल बोर्ड कंप्यूटर",
+"B. Sensor / सेंसर",
+"C. Actuator / एक्ट्यूएटर",
+"D. Router / राउटर"
+],
+answer:0
+},
+
+{
+question:"GPIO stands for? / GPIO का पूर्ण रूप क्या है?",
+options:[
+"A. General Purpose Input Output",
+"B. General Program Input Output",
+"C. Global Port Input Output",
+"D. General Processing Input Output"
+],
+answer:0
+},
+
+{
+question:"Which protocol is used for short-range wireless communication? / कम दूरी के वायरलेस संचार के लिए कौन सा प्रोटोकॉल उपयोग होता है?",
+options:[
+"A. Bluetooth",
+"B. FTP",
+"C. SMTP",
+"D. HTTP"
+],
+answer:0
+},
+
+{
+question:"ZigBee is mainly used in? / ZigBee मुख्य रूप से कहाँ उपयोग होता है?",
+options:[
+"A. IoT Networks",
+"B. Printing",
+"C. Web Browser",
+"D. Compiler"
+],
+answer:0
+},
+
+{
+question:"NFC stands for? / NFC का पूर्ण रूप क्या है?",
+options:[
+"A. Near Field Communication",
+"B. New Field Connection",
+"C. Network File Control",
+"D. National Field Communication"
+],
+answer:0
+},
+
+{
+question:"Bluetooth works in which frequency band? / Bluetooth किस Frequency Band पर कार्य करता है?",
+options:[
+"A. 2.4 GHz",
+"B. 5 GHz",
+"C. 900 MHz",
+"D. 1 GHz"
+],
+answer:0
+},
+
+{
+question:"Which network is used inside a home? / घर के अंदर कौन सा नेटवर्क उपयोग होता है?",
+options:[
+"A. LAN",
+"B. WAN",
+"C. MAN",
+"D. PAN"
+],
+answer:0
+},
+
+{
+question:"Cloud Computing allows users to? / Cloud Computing उपयोगकर्ता को क्या सुविधा देती है?",
+options:[
+"A. Store data online",
+"B. Print documents",
+"C. Scan papers",
+"D. Play music"
+],
+answer:0
+},
+
+{
+question:"IoT Architecture generally has how many layers? / IoT Architecture में सामान्यतः कितनी Layers होती हैं?",
+options:[
+"A. 4",
+"B. 2",
+"C. 6",
+"D. 8"
+],
+answer:0
+},
+
+{
+question:"First layer of IoT Architecture is? / IoT Architecture की पहली Layer कौन सी है?",
+options:[
+"A. Perception Layer",
+"B. Application Layer",
+"C. Network Layer",
+"D. Business Layer"
+],
+answer:0
+},
+
+{
+question:"Network Layer is responsible for? / Network Layer किसके लिए जिम्मेदार होती है?",
+options:[
+"A. Data Transmission",
+"B. Cooking",
+"C. Printing",
+"D. Audio"
+],
+answer:0
+},
+
+{
+question:"Application Layer provides? / Application Layer क्या प्रदान करती है?",
+options:[
+"A. User Services",
+"B. Power Supply",
+"C. Hardware Repair",
+"D. CPU Clock"
+],
+answer:0
+},
+
+{
+question:"Smart Home is an example of? / Smart Home किसका उदाहरण है?",
+options:[
+"A. IoT Application",
+"B. Compiler",
+"C. Operating System",
+"D. Network Cable"
+],
+answer:0
+},
+
+{
+question:"Smart Agriculture uses IoT for? / Smart Agriculture में IoT का उपयोग किसलिए होता है?",
+options:[
+"A. Crop Monitoring",
+"B. Movie Editing",
+"C. Gaming",
+"D. Printing"
+],
+answer:0
+},
+
+{
+question:"Smart Healthcare uses IoT for? / Smart Healthcare में IoT का उपयोग किसलिए होता है?",
+options:[
+"A. Patient Monitoring",
+"B. Video Editing",
+"C. Drawing",
+"D. Gaming"
+],
+answer:0
+},
+
+{
+question:"Smart City mainly uses IoT for? / Smart City में IoT का मुख्य उपयोग किसलिए होता है?",
+options:[
+"A. Traffic & Utility Management",
+"B. Photo Editing",
+"C. Typing",
+"D. Music"
+],
+answer:0
+},
+
+{
+question:"Which attack steals sensitive information? / संवेदनशील जानकारी चुराने वाला Attack कौन सा है?",
+options:[
+"A. Phishing",
+"B. Booting",
+"C. Loading",
+"D. Formatting"
+],
+answer:0
+},
+
+{
+question:"Strong passwords improve? / मजबूत Password किसे बेहतर बनाते हैं?",
+options:[
+"A. Security",
+"B. Speed",
+"C. Brightness",
+"D. Sound"
+],
+answer:0
+},
+
+{
+question:"Encryption is used for? / Encryption किसलिए उपयोग होती है?",
+options:[
+"A. Data Security",
+"B. Data Deletion",
+"C. Data Printing",
+"D. Data Copy"
+],
+answer:0
+},
+
+{
+question:"HTTPS provides? / HTTPS क्या प्रदान करता है?",
+options:[
+"A. Secure Communication",
+"B. Faster Typing",
+"C. Music",
+"D. Printing"
+],
+answer:0
+},
+
+{
+question:"Firewall is used for? / Firewall किसलिए उपयोग होता है?",
+options:[
+"A. Network Security",
+"B. Audio Recording",
+"C. Photo Editing",
+"D. Scanning"
+],
+answer:0
+},
+
+{
+question:"IoT devices generate? / IoT Devices क्या उत्पन्न करते हैं?",
+options:[
+"A. Data",
+"B. Paper",
+"C. Books",
+"D. Ink"
+],
+answer:0
+},
+
+{
+question:"Big Data in IoT means? / IoT में Big Data का क्या अर्थ है?",
+options:[
+"A. Huge amount of data",
+"B. Large computer",
+"C. Big monitor",
+"D. Large keyboard"
+],
+answer:0
+},
+
+{
+question:"Machine Learning in IoT helps in? / IoT में Machine Learning किसमें सहायता करती है?",
+options:[
+"A. Prediction",
+"B. Painting",
+"C. Printing",
+"D. Typing"
+],
+answer:0
+},
+
+{
+question:"Artificial Intelligence enables? / Artificial Intelligence क्या सक्षम बनाती है?",
+options:[
+"A. Smart Decision Making",
+"B. Manual Typing",
+"C. Paper Printing",
+"D. Hard Disk Formatting"
+],
+answer:0
+},
+
+{
+question:"Which company developed Blynk Platform? / Blynk Platform किसके द्वारा विकसित किया गया?",
+options:[
+"A. Blynk Inc.",
+"B. Microsoft",
+"C. Google",
+"D. IBM"
+],
+answer:0
+},
+
+{
+question:"Blynk App is mainly used for? / Blynk App मुख्य रूप से किसलिए उपयोग होती है?",
+options:[
+"A. IoT Device Control",
+"B. Video Editing",
+"C. Office Work",
+"D. Music Player"
+],
+answer:0
+},
+
+{
+question:"Which communication is best for very low power IoT devices? / बहुत कम Power वाले IoT Devices के लिए कौन सा संचार बेहतर है?",
+options:[
+"A. ZigBee",
+"B. HDMI",
+"C. VGA",
+"D. USB"
+],
+answer:0
+},
+
+{
+question:"Main goal of IoT is? / IoT का मुख्य उद्देश्य क्या है?",
+options:[
+"A. Connect devices through Internet",
+"B. Increase paper work",
+"C. Replace keyboards",
+"D. Print documents"
+],
+answer:0
+},
+             {
+question:"IoT में Smart Parking System का मुख्य उद्देश्य क्या है? / What is the main purpose of Smart Parking System in IoT?",
+options:[
+"A. वाहन धोना / Vehicle Washing",
+"B. खाली पार्किंग स्थान बताना / Show available parking space",
+"C. वाहन बेचना / Sell Vehicle",
+"D. इंजन रिपेयर / Engine Repair"
+],
+answer:1
+},
+
+{
+question:"Smart Farming में कौन-सा Sensor मिट्टी की नमी मापता है? / Which sensor measures soil moisture in Smart Farming?",
+options:[
+"A. Motion Sensor",
+"B. Soil Moisture Sensor",
+"C. GPS",
+"D. Camera"
+],
+answer:1
+},
+
+{
+question:"IoT में Air Quality Monitoring किसलिए उपयोग होता है? / Why is Air Quality Monitoring used in IoT?",
+options:[
+"A. इंटरनेट स्पीड मापने के लिए / Measure Internet Speed",
+"B. वायु प्रदूषण मापने के लिए / Measure Air Pollution",
+"C. मोबाइल चार्ज करने के लिए / Charge Mobile",
+"D. वीडियो रिकॉर्ड करने के लिए / Record Video"
+],
+answer:1
+},
+
+{
+question:"GPS का पूरा नाम क्या है? / Full form of GPS?",
+options:[
+"A. Global Positioning System",
+"B. General Position System",
+"C. Global Processing Service",
+"D. General Processing System"
+],
+answer:0
+},
+
+{
+question:"Smart Home में Door Lock को Remote से नियंत्रित करना किसका उदाहरण है? / Remote Door Lock Control is an example of?",
+options:[
+"A. IoT",
+"B. AI",
+"C. DBMS",
+"D. Compiler"
+],
+answer:0
+},
+
+{
+question:"IoT Device को Internet से जोड़ने के लिए क्या आवश्यक है? / What is required to connect IoT device to Internet?",
+options:[
+"A. Network Connection",
+"B. Scanner",
+"C. Printer",
+"D. Speaker"
+],
+answer:0
+},
+
+{
+question:"IoT आधारित Smart Meter किसका मापन करता है? / Smart Meter measures?",
+options:[
+"A. Electricity Usage",
+"B. RAM",
+"C. Hard Disk",
+"D. CPU Speed"
+],
+answer:0
+},
+
+{
+question:"IoT में MQTT क्या है? / MQTT is?",
+options:[
+"A. Database",
+"B. Communication Protocol",
+"C. Browser",
+"D. Operating System"
+],
+answer:1
+},
+
+{
+question:"IoT Device में Firmware क्या होता है? / What is Firmware?",
+options:[
+"A. Hardware",
+"B. Permanent Software",
+"C. Antivirus",
+"D. Browser"
+],
+answer:1
+},
+
+{
+question:"ESP32 किस प्रकार का Device है? / ESP32 is?",
+options:[
+"A. Microcontroller",
+"B. Monitor",
+"C. Keyboard",
+"D. Printer"
+],
+answer:0
+},
+
+{
+question:"NodeMCU मुख्यतः किस Controller पर आधारित है? / NodeMCU is based on?",
+options:[
+"A. ESP8266",
+"B. Arduino UNO",
+"C. Raspberry Pi",
+"D. Intel"
+],
+answer:0
+},
+
+{
+question:"IoT में Gateway का कार्य क्या है? / Gateway is used for?",
+options:[
+"A. Device और Cloud को जोड़ना / Connect Device to Cloud",
+"B. फोटो एडिट करना",
+"C. गेम खेलना",
+"D. प्रिंट निकालना"
+],
+answer:0
+},
+
+{
+question:"ThingSpeak क्या है? / What is ThingSpeak?",
+options:[
+"A. IoT Cloud Platform",
+"B. Browser",
+"C. Compiler",
+"D. IDE"
+],
+answer:0
+},
+
+{
+question:"IoT Dashboard किसलिए उपयोग होता है? / Dashboard is used for?",
+options:[
+"A. Data Monitoring",
+"B. Typing",
+"C. Video Editing",
+"D. Gaming"
+],
+answer:0
+},
+
+{
+question:"IoT Device का Data कहाँ Store किया जा सकता है? / IoT Data can be stored in?",
+options:[
+"A. Cloud",
+"B. Notebook",
+"C. Calculator",
+"D. Speaker"
+],
+answer:0
+},
+
+{
+question:"IoT में कौन-सा खतरा सबसे सामान्य है? / Common risk in IoT?",
+options:[
+"A. Security Attack",
+"B. Screen Damage",
+"C. Mouse Failure",
+"D. Keyboard Dust"
+],
+answer:0
+},
+
+{
+question:"HTTPS किसलिए उपयोग होता है? / HTTPS is used for?",
+options:[
+"A. Secure Communication",
+"B. Gaming",
+"C. Video Editing",
+"D. Printing"
+],
+answer:0
+},
+
+{
+question:"IoT में Authentication का उद्देश्य क्या है? / Purpose of Authentication?",
+options:[
+"A. User Verification",
+"B. Data Delete",
+"C. Device Shutdown",
+"D. Formatting"
+],
+answer:0
+},
+
+{
+question:"IoT में Encryption क्यों उपयोग होती है? / Why Encryption is used?",
+options:[
+"A. Data Security",
+"B. Fast Typing",
+"C. Video Playing",
+"D. Printing"
+],
+answer:0
+},
+
+{
+question:"IoT में कौन-सा Communication Protocol Lightweight माना जाता है? / Lightweight Protocol?",
+options:[
+"A. MQTT",
+"B. FTP",
+"C. HTTP",
+"D. SMTP"
+],
+answer:0
+},
+
+{
+question:"Smart Healthcare किसका उदाहरण है? / Smart Healthcare is example of?",
+options:[
+"A. IoT Application",
+"B. Compiler",
+"C. Operating System",
+"D. Antivirus"
+],
+answer:0
+},
+
+{
+question:"Wearable Device का उदाहरण कौन-सा है? / Example of Wearable Device?",
+options:[
+"A. Smart Watch",
+"B. Printer",
+"C. Monitor",
+"D. Scanner"
+],
+answer:0
+},
+
+{
+question:"IoT Device को नियंत्रित करने के लिए सबसे अधिक किसका उपयोग होता है? / Most commonly used to control IoT devices?",
+options:[
+"A. Mobile App",
+"B. Paint",
+"C. Calculator",
+"D. Notepad"
+],
+answer:0
+},
+
+{
+question:"IoT में Sensor का Output कहाँ जाता है? / Sensor output goes to?",
+options:[
+"A. Controller",
+"B. Printer",
+"C. Monitor Only",
+"D. Keyboard"
+],
+answer:0
+},
+
+{
+question:"Cloud Computing और IoT का संबंध क्या है? / Relationship between Cloud and IoT?",
+options:[
+"A. Cloud stores and processes IoT data",
+"B. Cloud repairs hardware",
+"C. Cloud prints documents",
+"D. Cloud replaces sensors"
+],
+answer:0
+},
+
+{
+question:"IoT में सबसे महत्वपूर्ण विशेषता क्या है? / Most important feature of IoT?",
+options:[
+"A. Connectivity",
+"B. Typing",
+"C. Printing",
+"D. Drawing"
+],
+answer:0
+},
+
+{
+question:"IoT का भविष्य किस क्षेत्र में सबसे अधिक है? / Future of IoT is mainly in?",
+options:[
+"A. Smart Cities",
+"B. Manual Work Only",
+"C. Typewriter",
+"D. Floppy Disk"
+],
+answer:0
+},
+
+{
+question:"IoT का पूरा नाम क्या है? / Full form of IoT?",
+options:[
+"A. Internet of Things",
+"B. Internet of Technology",
+"C. Integrated of Things",
+"D. Intelligent of Technology"
+],
+answer:0
+},
+
+{
+question:"IoT का मुख्य उद्देश्य क्या है? / Main objective of IoT?",
+options:[
+"A. Devices को Internet के माध्यम से जोड़ना / Connect Devices through Internet",
+"B. केवल Programming करना",
+"C. केवल Database बनाना",
+"D. केवल गेम खेलना"
+],
+answer:0
+},
+{
+
+                question: "What does HTML stand for? / HTML ka full form kya hai?",
+                options: [
+                    "A. Hyper Text Markup Language",
+                    "B. High Text Machine Language",
+                    "C. Hyper Transfer Markup Language",
+                    "D. Hyper Tool Markup Language"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which HTML tag is used for the largest heading? / Sabse badi heading ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;h6&gt;",
+                    "B. &lt;heading&gt;",
+                    "C. &lt;h1&gt;",
+                    "D. &lt;head&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which HTML tag is used for paragraph? / Paragraph ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;para&gt;",
+                    "B. &lt;p&gt;",
+                    "C. &lt;pg&gt;",
+                    "D. &lt;paragraph&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which tag creates a hyperlink? / Hyperlink banane ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;href&gt;",
+                    "B. &lt;url&gt;",
+                    "C. &lt;a&gt;",
+                    "D. &lt;link&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Correct syntax for hyperlink? / Hyperlink ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. &lt;a href='page.html'&gt;Click&lt;/a&gt;",
+                    "B. &lt;link='page.html'&gt;",
+                    "C. &lt;href='page.html'&gt;",
+                    "D. &lt;a&gt;page.html&lt;/a&gt;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which tag is used for image? / Image lagane ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;image&gt;",
+                    "B. &lt;picture&gt;",
+                    "C. &lt;img&gt;",
+                    "D. &lt;src&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Correct image syntax? / Sahi image syntax kaunsi hai?",
+                options: [
+                    "A. &lt;img src='photo.jpg' alt='Photo'&gt;",
+                    "B. &lt;image src='photo.jpg'&gt;",
+                    "C. &lt;img&gt;photo.jpg&lt;/img&gt;",
+                    "D. &lt;picture='photo.jpg'&gt;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which tag is used for line break? / Line break ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;break&gt;",
+                    "B. &lt;br&gt;",
+                    "C. &lt;lb&gt;",
+                    "D. &lt;newline&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which tag creates an ordered list? / Ordered list ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;ul&gt;",
+                    "B. &lt;list&gt;",
+                    "C. &lt;ol&gt;",
+                    "D. &lt;li&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which tag creates an unordered list? / Unordered list ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;ol&gt;",
+                    "B. &lt;ul&gt;",
+                    "C. &lt;list&gt;",
+                    "D. &lt;li&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which tag represents list item? / List item ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;item&gt;",
+                    "B. &lt;ul&gt;",
+                    "C. &lt;li&gt;",
+                    "D. &lt;ol&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which tag creates a table? / Table banane ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;tb&gt;",
+                    "B. &lt;table&gt;",
+                    "C. &lt;tr&gt;",
+                    "D. &lt;td&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which tag creates a table row? / Table row ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;tr&gt;",
+                    "B. &lt;td&gt;",
+                    "C. &lt;th&gt;",
+                    "D. &lt;row&gt;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which tag creates a table cell? / Table data cell ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;th&gt;",
+                    "B. &lt;tr&gt;",
+                    "C. &lt;table&gt;",
+                    "D. &lt;td&gt;"
+                ],
+                answer: 3
+            },
+
+            {
+                question: "Which tag creates table heading cell? / Table heading cell ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;td&gt;",
+                    "B. &lt;th&gt;",
+                    "C. &lt;tr&gt;",
+                    "D. &lt;thead&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which tag contains page title? / Page title kis tag me likhte hain?",
+                options: [
+                    "A. &lt;head&gt;",
+                    "B. &lt;body&gt;",
+                    "C. &lt;title&gt;",
+                    "D. &lt;meta&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which tag contains metadata? / Metadata kis tag me hota hai?",
+                options: [
+                    "A. &lt;head&gt;",
+                    "B. &lt;body&gt;",
+                    "C. &lt;footer&gt;",
+                    "D. &lt;main&gt;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which HTML5 tag is used for navigation? / Navigation ke liye HTML5 kaunsa tag use karta hai?",
+                options: [
+                    "A. &lt;navigation&gt;",
+                    "B. &lt;nav&gt;",
+                    "C. &lt;menu&gt;",
+                    "D. &lt;navigate&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which HTML5 tag is used for footer? / Footer ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;foot&gt;",
+                    "B. &lt;bottom&gt;",
+                    "C. &lt;footer&gt;",
+                    "D. &lt;end&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which HTML5 tag is used for header section? / Header section ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;header&gt;",
+                    "B. &lt;head&gt;",
+                    "C. &lt;top&gt;",
+                    "D. &lt;heading&gt;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which input type hides characters? / Password ko hide karne ke liye kaunsa input type use hota hai?",
+                options: [
+                    "A. text",
+                    "B. hidden",
+                    "C. secure",
+                    "D. password"
+                ],
+                answer: 3
+            },
+
+            {
+                question: "Which input type is used for email? / Email input ke liye kaunsa type use hota hai?",
+                options: [
+                    "A. mail",
+                    "B. email",
+                    "C. text-email",
+                    "D. gmail"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which input type is used for number? / Number input ke liye kaunsa type use hota hai?",
+                options: [
+                    "A. numeric",
+                    "B. integer",
+                    "C. number",
+                    "D. digit"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which tag creates dropdown list? / Dropdown list ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;dropdown&gt;",
+                    "B. &lt;option&gt;",
+                    "C. &lt;select&gt;",
+                    "D. &lt;list&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which tag is used inside select? / Select ke andar kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;choice&gt;",
+                    "B. &lt;option&gt;",
+                    "C. &lt;item&gt;",
+                    "D. &lt;value&gt;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which tag creates a form? / Form banane ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;input&gt;",
+                    "B. &lt;data&gt;",
+                    "C. &lt;form&gt;",
+                    "D. &lt;submit&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which button submits a form? / Form submit karne ke liye kaunsa type use hota hai?",
+                options: [
+                    "A. type='send'",
+                    "B. type='button'",
+                    "C. type='submit'",
+                    "D. type='ok'"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which syntax is WRONG? / Kaunsi syntax galat hai?",
+                options: [
+                    "A. &lt;p&gt;Hello&lt;/p&gt;",
+                    "B. &lt;h1&gt;Title&lt;/h1&gt;",
+                    "C. &lt;body&gt;Hello&lt;/body&gt;",
+                    "D. &lt;p&gt;Hello&lt;p&gt;"
+                ],
+                answer: 3
+            },
+
+            {
+                question: "Which tag is used for audio player? / Audio player ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;sound&gt;",
+                    "B. &lt;music&gt;",
+                    "C. &lt;audio controls&gt;&lt;/audio&gt;",
+                    "D. &lt;mp3&gt;"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which tag is used for video player? / Video player ke liye kaunsa tag use hota hai?",
+                options: [
+                    "A. &lt;movie&gt;",
+                    "B. &lt;video controls&gt;&lt;/video&gt;",
+                    "C. &lt;media&gt;",
+                    "D. &lt;play&gt;"
+                ],
+                answer: 1
+            },
+            {
+                question: "What does CSS stand for? / CSS ka full form kya hai?",
+                options: [
+                    "A. Cascading Style Sheets",
+                    "B. Computer Style Sheets",
+                    "C. Creative Style System",
+                    "D. Colorful Style Sheets"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which CSS property changes text color? / Text color badalne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. text-color",
+                    "B. font-color",
+                    "C. color",
+                    "D. bgcolor"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Correct CSS syntax? / Sahi CSS syntax kaunsi hai?",
+                options: [
+                    "A. color=red;",
+                    "B. color:red;",
+                    "C. color=>red;",
+                    "D. color red;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which property changes background color? / Background color badalne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. bgcolor",
+                    "B. background-color",
+                    "C. color",
+                    "D. back-color"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which property changes font size? / Font size badalne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. text-size",
+                    "B. size",
+                    "C. font-size",
+                    "D. font-style"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which property makes text bold? / Text ko bold karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. font-weight",
+                    "B. bold",
+                    "C. text-bold",
+                    "D. font-style"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property changes font family? / Font family change karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. font-name",
+                    "B. family",
+                    "C. font-family",
+                    "D. text-family"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which property aligns text horizontally? / Text align karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. align",
+                    "B. text-align",
+                    "C. position",
+                    "D. center"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which syntax centers text? / Text center karne ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. text-align:center;",
+                    "B. center-text:true;",
+                    "C. text:center;",
+                    "D. align:center;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property adds space inside an element? / Element ke andar space dene ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. margin",
+                    "B. padding",
+                    "C. border",
+                    "D. spacing"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which property adds space outside an element? / Element ke bahar space dene ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. padding",
+                    "B. border",
+                    "C. margin",
+                    "D. outline"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which property rounds element corners? / Corners round karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. corner-radius",
+                    "B. radius",
+                    "C. border-radius",
+                    "D. round-corner"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Correct border radius syntax? / Border radius ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. border-radius:10px;",
+                    "B. radius:10px;",
+                    "C. corner-radius:10px;",
+                    "D. border-round:10px;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property controls transparency? / Transparency control karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. transparent",
+                    "B. alpha",
+                    "C. opacity",
+                    "D. visibility"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which syntax makes an element 50% transparent? / Element ko 50% transparent karne ki syntax?",
+                options: [
+                    "A. opacity:0.5;",
+                    "B. opacity:50;",
+                    "C. transparent:50;",
+                    "D. alpha:50;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which CSS selector selects all elements? / Sabhi elements select karne ke liye kaunsa selector use hota hai?",
+                options: [
+                    "A. #",
+                    "B. .",
+                    "C. *",
+                    "D. all"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Which selector selects element by id? / ID ke through element select karne ke liye kaunsa selector use hota hai?",
+                options: [
+                    "A. .demo",
+                    "B. #demo",
+                    "C. *demo",
+                    "D. demo#"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which selector selects elements by class? / Class ke through element select karne ke liye kaunsa selector use hota hai?",
+                options: [
+                    "A. #box",
+                    "B. .box",
+                    "C. *box",
+                    "D. box#"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Correct CSS rule for paragraph? / Paragraph ke liye sahi CSS rule kaunsa hai?",
+                options: [
+                    "A. p { color:red; }",
+                    "B. p=color:red;",
+                    "C. p(color:red)",
+                    "D. p=>color:red;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property creates shadow? / Shadow lagane ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. shadow",
+                    "B. text-shadow",
+                    "C. box-shadow",
+                    "D. element-shadow"
+                ],
+                answer: 2
+            },
+
+            {
+                question: "Correct shadow syntax? / Box shadow ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. box-shadow:2px 2px 5px gray;",
+                    "B. shadow-box:2px;",
+                    "C. shadow:true;",
+                    "D. box=shadow;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property is used for Flexbox? / Flexbox enable karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. display:flex;",
+                    "B. flex-display;",
+                    "C. display-flex;",
+                    "D. flex:true;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property aligns items horizontally in Flexbox? / Flexbox me horizontal alignment ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. align-items",
+                    "B. justify-content",
+                    "C. flex-align",
+                    "D. horizontal-align"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which property aligns items vertically in Flexbox? / Flexbox me vertical alignment ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. justify-content",
+                    "B. align-items",
+                    "C. vertical-align",
+                    "D. item-align"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which syntax creates CSS Grid? / CSS Grid ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. display:grid;",
+                    "B. grid-display;",
+                    "C. display-grid;",
+                    "D. grid:true;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property defines grid columns? / Grid columns define karne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. grid-template-columns",
+                    "B. grid-columns",
+                    "C. columns-grid",
+                    "D. template-columns"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property sets absolute position? / Absolute position ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. position:absolute;",
+                    "B. absolute-position;",
+                    "C. position=absolute;",
+                    "D. set-position:absolute;"
+                ],
+                answer: 0
+            },
+
+            {
+                question: "Which property fixes an element on screen? / Element ko screen par fixed rakhne ke liye kaunsi property use hoti hai?",
+                options: [
+                    "A. display:fixed;",
+                    "B. position:fixed;",
+                    "C. fixed:true;",
+                    "D. position=fix;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which syntax hides an element? / Element ko hide karne ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. visibility:none;",
+                    "B. display:none;",
+                    "C. hidden:true;",
+                    "D. hide:true;"
+                ],
+                answer: 1
+            },
+
+            {
+                question: "Which syntax creates a media query? / Media query ki sahi syntax kaunsi hai?",
+                options: [
+                    "A. @media screen and (max-width:768px){}",
+                    "B. media(screen<768px){}",
+                    "C. @screen(768px){}",
+                    "D. responsive(768px){}"
+                ],
+                answer: 0
+            },
+            {
+                question: "Which keyword declares a variable? / Variable declare karne ke liye kaunsa keyword use hota hai?",
+                options: ["A. int", "B. var", "C. string", "D. define"],
+                answer: 1
+            },
+
+            {
+                question: "Which keyword declares a block-scoped variable? / Block scope variable ke liye kaunsa keyword use hota hai?",
+                options: ["A. var", "B. let", "C. static", "D. define"],
+                answer: 1
+            },
+
+            {
+                question: "Which keyword declares a constant? / Constant declare karne ke liye kaunsa keyword use hota hai?",
+                options: ["A. final", "B. fixed", "C. const", "D. constant"],
+                answer: 2
+            },
+
+            {
+                question: "Single line comment syntax? / Single line comment ki syntax kya hai?",
+              options: ["A. &lt;!-- --&gt;", "B. ##", "C. //", "D. **"],
+                answer: 2
+
+            },
+
+            {
+                question: "typeof 10 returns? / typeof 10 kya return karega?",
+                options: ["A. string", "B. number", "C. integer", "D. object"],
+                answer: 1
+            },
+
+            {
+                question: "Which operator checks value and datatype both? / Value aur datatype dono check karne wala operator?",
+                options: ["A. ==", "B. =", "C. ===", "D. !="],
+                answer: 2
+            },
+
+            {
+                question: "Which method adds item at end of array? / Array ke end me element add karne ka method?",
+                options: ["A. pop()", "B. shift()", "C. push()", "D. splice()"],
+                answer: 2
+            },
+
+            {
+                question: "Which method removes last element? / Last element remove karne ka method?",
+                options: ["A. push()", "B. pop()", "C. shift()", "D. concat()"],
+                answer: 1
+            },
+
+            {
+                question: "Which method removes first element? / First element remove karne ka method?",
+                options: ["A. shift()", "B. pop()", "C. push()", "D. splice()"],
+                answer: 0
+            },
+
+            {
+                question: "Which method adds item at beginning? / Array ke beginning me item add karne ka method?",
+                options: ["A. push()", "B. shift()", "C. unshift()", "D. splice()"],
+                answer: 2
+            },
+
+            {
+                question: "Correct IF syntax? / IF ki sahi syntax kaunsi hai?",
+                options: ["A. if x=5", "B. if(x==5)", "C. if x==5 then", "D. if:x==5"],
+                answer: 1
+            },
+
+            {
+                question: "Which loop executes at least once? / Kaunsa loop kam se kam ek baar execute hota hai?",
+                options: ["A. for", "B. while", "C. do...while", "D. foreach"],
+                answer: 2
+            },
+
+            {
+                question: "Which function displays alert box? / Alert box dikhane wala function?",
+                options: ["A. prompt()", "B. alert()", "C. confirm()", "D. display()"],
+                answer: 1
+            },
+
+            {
+                question: "Which function takes user input? / User input lene wala function?",
+                options: ["A. alert()", "B. input()", "C. prompt()", "D. confirm()"],
+                answer: 2
+            },
+
+            {
+                question: "Which function asks OK/Cancel? / OK ya Cancel puchne wala function?",
+                options: ["A. alert()", "B. prompt()", "C. ask()", "D. confirm()"],
+                answer: 3
+            },
+
+            {
+                question: "Convert JSON string into object? / JSON string ko object me convert karne wala method?",
+                options: ["A. JSON.stringify()", "B. JSON.parse()", "C. JSON.object()", "D. JSON.convert()"],
+                answer: 1
+            },
+
+            {
+                question: "Convert object into JSON string? / Object ko JSON string me convert karne wala method?",
+                options: ["A. JSON.parse()", "B. JSON.stringify()", "C. JSON.objectify()", "D. JSON.toObject()"],
+                answer: 1
+            },
+
+            {
+                question: "Select element by id? / ID se element select karne ka method?",
+                options: ["A. querySelector()", "B. getById()", "C. getElementById()", "D. getElement()"],
+                answer: 2
+            },
+
+            {
+                question: "Select element using CSS selector? / CSS selector se element select karne ka method?",
+                options: ["A. querySelector()", "B. getElementById()", "C. getElements()", "D. selector()"],
+                answer: 0
+            },
+
+            {
+                question: "Button click event? / Button click event ka naam?",
+                options: ["A. onmouseover", "B. onclick", "C. onchange", "D. onload"],
+                answer: 1
+            },
+
+            {
+                question: "Page load event? / Page load hone par kaunsa event chalta hai?",
+                options: ["A. onsubmit", "B. onchange", "C. onload", "D. onclick"],
+                answer: 2
+            },
+
+            {
+                question: "Form value change event? / Form value change hone par kaunsa event chalta hai?",
+                options: ["A. onchange", "B. onload", "C. onfocus", "D. onclick"],
+                answer: 0
+            },
+
+            {
+                question: "Array.isArray() returns? / Array.isArray() kya return karta hai?",
+                options: ["A. Array", "B. Object", "C. Boolean", "D. String"],
+                answer: 2
+            },
+
+            {
+                question: "Join array into string? / Array ko string me convert karne ka method?",
+                options: ["A. join()", "B. split()", "C. concat()", "D. slice()"],
+                answer: 0
+            },
+
+            {
+                question: "Convert string to uppercase? / String ko uppercase me convert karne ka method?",
+                options: ["A. upper()", "B. uppercase()", "C. toUpperCase()", "D. toUpper()"],
+                answer: 2
+            },
+
+            {
+                question: "Convert string to lowercase? / String ko lowercase me convert karne ka method?",
+                options: ["A. lower()", "B. toLowerCase()", "C. lowercase()", "D. downcase()"],
+                answer: 1
+            },
+
+            {
+                question: "Which method finds array length? / Array length nikalne ke liye kya use hota hai?",
+                options: ["A. size()", "B. count()", "C. length", "D. total"],
+                answer: 2
+            },
+
+            {
+                question: "Which method combines arrays? / Arrays ko combine karne ka method?",
+                options: ["A. merge()", "B. concat()", "C. push()", "D. join()"],
+                answer: 1
+            },
+
+            {
+                question: "Which method extracts part of array? / Array ka part nikalne ka method?",
+                options: ["A. splice()", "B. split()", "C. slice()", "D. join()"],
+                answer: 2
+            },
+
+            {
+                question: "Which method removes/adds elements? / Array me add/remove karne ka method?",
+                options: ["A. splice()", "B. slice()", "C. split()", "D. join()"],
+                answer: 0
+            },
+            {
+                question: "AngularJS is maintained by? / AngularJS ko kis company ne develop kiya?",
+                options: ["A. Microsoft", "B. Google", "C. Meta", "D. Amazon"],
+                answer: 1
+            },
+
+            {
+                question: "AngularJS app initialize karne ki directive?",
+                options: ["A. ng-start", "B. ng-app", "C. ng-init", "D. ng-controller"],
+                answer: 1
+            },
+
+            {
+                question: "Data binding directive?",
+                options: ["A. ng-bind", "B. ng-model", "C. ng-repeat", "D. ng-show"],
+                answer: 0
+            },
+
+            {
+                question: "Input binding directive?",
+                options: ["A. ng-bind", "B. ng-model", "C. ng-controller", "D. ng-view"],
+                answer: 1
+            },
+
+            {
+                question: "Repeat HTML elements directive?",
+                options: ["A. ng-copy", "B. ng-repeat", "C. ng-loop", "D. ng-for"],
+                answer: 1
+            },
+
+            {
+                question: "Hide element directive?",
+                options: ["A. ng-hide", "B. ng-delete", "C. ng-remove", "D. ng-invisible"],
+                answer: 0
+            },
+
+            {
+                question: "Show element directive?",
+                options: ["A. ng-visible", "B. ng-show", "C. ng-open", "D. ng-display"],
+                answer: 1
+            },
+
+            {
+                question: "Click event directive?",
+                options: ["A. ng-click", "B. ng-event", "C. ng-tap", "D. ng-press"],
+                answer: 0
+            },
+
+            {
+                question: "Conditional directive?",
+                options: ["A. ng-condition", "B. ng-if", "C. ng-check", "D. ng-case"],
+                answer: 1
+            },
+
+            {
+                question: "AJAX request service?",
+                options: ["A. $request", "B. $ajax", "C. $http", "D. $service"],
+                answer: 2
+            },
+
+            {
+                question: "AngularJS expression syntax?",
+                options: ["A. [[ ]]", "B. {{ }}", "C. (( ))", "D. << >>"],
+                answer: 1
+            },
+
+            {
+                question: "Controller aur View ko connect karne wala object?",
+                options: ["A. $route", "B. $scope", "C. $model", "D. $root"],
+                answer: 1
+            },
+
+            {
+                question: "AngularJS architecture?",
+                options: ["A. MVC", "B. MVP", "C. MVVM", "D. Both MVC and MVVM"],
+                answer: 3
+            },
+
+            {
+                question: "External HTML include directive?",
+                options: ["A. ng-load", "B. ng-html", "C. ng-import", "D. ng-include"],
+                answer: 3
+            },
+
+            {
+                question: "URL change service?",
+                options: ["A. $scope", "B. $http", "C. $location", "D. $window"],
+                answer: 2
+            },
+
+            {
+                question: "W3.CSS container class?",
+                options: ["A. w3-box", "B. w3-container", "C. w3-wrapper", "D. w3-content"],
+                answer: 1
+            },
+
+            {
+                question: "W3.CSS button class?",
+                options: ["A. w3-btn", "B. w3-button", "C. w3-click", "D. w3-control"],
+                answer: 1
+            },
+
+            {
+                question: "W3.CSS card class?",
+                options: ["A. w3-card", "B. w3-shadow", "C. w3-panel", "D. w3-box"],
+                answer: 0
+            },
+
+            {
+                question: "W3.CSS center class?",
+                options: ["A. w3-align", "B. w3-middle", "C. w3-center", "D. w3-text-center"],
+                answer: 2
+            },
+
+            {
+                question: "W3.CSS hide class?",
+                options: ["A. w3-hide", "B. w3-hidden", "C. w3-none", "D. w3-display-none"],
+                answer: 0
+            },
+
+            {
+                question: "W3.CSS responsive image class?",
+                options: ["A. w3-img", "B. w3-image", "C. w3-responsive", "D. w3-fluid"],
+                answer: 1
+            },
+
+            {
+                question: "W3.CSS blue background class?",
+                options: ["A. w3-primary", "B. w3-blue", "C. w3-bg-blue", "D. w3-color-blue"],
+                answer: 1
+            },
+
+            {
+                question: "W3.CSS modal class?",
+                options: ["A. w3-popup", "B. w3-window", "C. w3-modal", "D. w3-dialog"],
+                answer: 2
+            },
+
+            {
+                question: "Firebase cloud database service?",
+                options: ["A. Firestore", "B. SQL", "C. MongoDB", "D. Oracle"],
+                answer: 0
+            }
+
+        ];
+        const totalQuestions = questions.length;
+        var cQuestion = 0;
+        var answers = Array(totalQuestions).fill(null);
+        var timerDuration = 3570* 1000;
+        var quizElement = document.getElementById("quiz");
+        var prevBtn = document.getElementById("prevBtn");
+        var nextBtn = document.getElementById("nextBtn");
+        var submitBtn = document.getElementById("submitBtn");
+        let timeLeft = 30;
+        let questionTimer;
+        function renderQuestion() {
+            var questionData = questions[cQuestion];
+            quizElement.innerHTML = `
+<div class="question">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2>Question ${cQuestion + 1}</h2>
+        <h2 style="color:red"><img src="clock.png"width="45"height="30px"> <span id="timer">30</span>s</h2>
+    </div>
+
+    <p>${questionData.question}</p>
+</div>
+
+<div class="options">
+    ${questionData.options.map((option, index) => `
+        <label>
+            <input type="radio"
+                   name="answer"
+                   value="${index}"
+                   ${answers[cQuestion] === index ? 'checked' : ''}>
+            ${option}
+        </label>
+    `).join("")}
+</div>
+`;
+            //     quizElement.innerHTML = `
+            // <div class="question">
+            //     <h2>Question ${cQuestion + 1}:</h2>
+            //        <p>${questionData.question}</p>
+            // </div>
+            // <div class="options"style="display:flex">
+            //     ${questionData.options.map((option, index) => `
+
+            //        <label>
+            //          <input type="radio" name="answer" value="${index}" ${answers[cQuestion] === index ? 'checked' : ''}>
+            //              ${option}
+            //       </label>
+            //          `).join('')}
+            // </div>
+            //     `;
+        }
+        function startQuestionTimer() {
+
+            clearInterval(questionTimer);
+
+            timeLeft = 30;
+
+            document.getElementById("timer").innerText = timeLeft;
+
+            questionTimer = setInterval(() => {
+
+                timeLeft--;
+
+                document.getElementById("timer").innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+
+                    clearInterval(questionTimer);
+
+                    if (cQuestion < totalQuestions - 1) {
+
+                        cQuestion++;
+
+                        renderQuestion();
+                        updateNavigation();
+                        // startQuestionTimer();
+
+                    } else {
+
+                        showResult();
+                    }
+                }
+
+            }, 1000);
+        }
+        prevBtn.style.display = "none";
+        nextBtn.addEventListener("click", () => {
+
+            clearInterval(questionTimer);
+
+            if (cQuestion < totalQuestions - 1) {
+
+                cQuestion++;
+
+                renderQuestion();
+                updateNavigation();
+                startQuestionTimer();
+
+            }
+        });
+
+        function updateNavigation() {
+
+            nextBtn.disabled = cQuestion === totalQuestions - 1;
+
+            submitBtn.classList.toggle(
+                "hidden",
+                cQuestion !== totalQuestions - 1
+            );
+        }
+        let resultSaved = false;
+        let attemptId = Date.now();
+        function showResult() {
+            if (resultSaved) {
+                return;
+            }
+
+            resultSaved = true;
+
+            clearInterval(questionTimer);
+
+            let correctAnswers = 0;
+
+            questions.forEach((question, index) => {
+
+                if (answers[index] === question.answer) {
+                    correctAnswers++;
+                }
+
+            });
+
+            let percentage = ((correctAnswers / totalQuestions) * 100).toFixed(2);
+
+            let grade = "";
+
+            if (percentage >= 90) {
+                grade = "S";
+            }
+            else if (percentage >= 80) {
+                grade = "A++";
+            }
+            else if (percentage >= 70) {
+                grade = "A";
+            }
+            else if (percentage >= 60) {
+                grade = "B";
+            }
+            else if (percentage >= 50) {
+                grade = "C";
+            }
+            else {
+                grade = "D";
+            }
+
+            if (!resultSaved) {
+
+                resultSaved = true;
+
+                saveResultToFirebase({
+                    attemptId: attemptId,
+
+                    studentName: studentName,
+
+                    courseName: courseName,
+
+                    totalQuestions: totalQuestions,
+
+                    correctAnswers: correctAnswers,
+
+                    wrongAnswers: totalQuestions - correctAnswers,
+
+                    percentage: Number(percentage),
+
+                    grade: grade,
+
+                    date: new Date().toLocaleString()
+
+                });
+
+            }
+
+            const resultHTML = `
+    
+    <div style="
+        text-align:center;
+        padding:20px;
+        background:white;
+        border-radius:10px;
+        margin-bottom:20px;
+        box-shadow:0 0 10px rgba(0,0,0,.2);
+    ">
+
+        <h1>Quiz Result</h1>
+        <h2>Student Name : ${studentName}</h2>
+
+<h2>Course Name : ${courseName}</h2>
+
+        <h2>Total Questions : ${totalQuestions}</h2>
+
+        <h2>Correct Answers : ${correctAnswers}</h2>
+
+        <h2>Wrong Answers : ${totalQuestions - correctAnswers}</h2>
+
+        <h2>Total Marks : ${correctAnswers}/${totalQuestions}</h2>
+
+        <h2>Percentage : ${percentage}%</h2>
+
+        <h1 style="color:green">
+            Grade : ${grade}
+        </h1>
+
+    </div>
+
+    ${questions.map((question, index) => {
+
+                const isCorrect =
+                    answers[index] === question.answer;
+
+                return `
+        <div class="result">
+
+            <h3>
+                Question ${index + 1}
+                :
+                ${isCorrect ? '✅ Correct' : '❌ Incorrect'}
+            </h3>
+
+            <div class="answer">
+                Your Answer :
+                ${answers[index] !== null
+                        ? question.options[answers[index]]
+                        : "Not Attempted"
+                    }
+            </div>
+
+            <div class="answer">
+                Correct Answer :
+                ${question.options[question.answer]}
+            </div>
+
+        </div>
+
+        <hr>
+        `;
+            }).join("")}
+    `;
+
+            saveResultToFirebase({
+
+                studentName: studentName,
+
+                courseName: courseName,
+
+                totalQuestions: totalQuestions,
+
+                correctAnswers: correctAnswers,
+
+                wrongAnswers: totalQuestions - correctAnswers,
+
+                percentage: percentage,
+
+                grade: grade,
+
+                date: new Date().toLocaleString()
+
+            });
+            quizElement.innerHTML = resultHTML;
+           
+            nextBtn.style.display = "none";
+            submitBtn.style.display = "none";
+        }
+        function Submit() {
+            alert("Time's up! Submitting the quiz.");
+            showResult();
+        }
+
+        submitBtn.addEventListener("click", () => {
+            showResult();
+        });
+        quizElement.addEventListener("change", (e) => {
+            if (e.target.name === "answer") {
+                answers[cQuestion] = parseInt(e.target.value);
+            }
+        });
+        setTimeout(Submit, timerDuration);
+        document
+            .getElementById("startQuizBtn")
+            .addEventListener("click", () => {
+                document.documentElement.requestFullscreen();
+
+                studentName =
+                    document.getElementById("username").value.trim();
+
+                courseName =
+                    document.getElementById("course").value.trim();
+
+                if (studentName === "") {
+                    alert("Please Enter Username");
+                    return;
+                }
+
+                document
+                    .getElementById("popupOverlay")
+                    .style.display = "none";
+
+                document
+                    .getElementById("mainQuiz")
+                    .style.display = "block";
+
+                renderQuestion();
+                updateNavigation();
+                startQuestionTimer();
+
+            });
+    </script>
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ8Od1KTOFTNL2yUN72Fxv1EFWRFZaid4",
+            authDomain: "mcq-test-ee55a.firebaseapp.com",
+            projectId: "mcq-test-ee55a",
+            storageBucket: "mcq-test-ee55a.firebasestorage.app",
+            messagingSenderId: "966944827158",
+            appId: "1:966944827158:web:2d0b89ead01a1c68ebd237",
+            measurementId: "G-Y3F5VFX2XT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        const db = getFirestore(app);
+
+        window.saveResultToFirebase = async function (data) {
+
+            try {
+
+                await addDoc(
+                    collection(db, "quizResults"),
+                    data
+                );
+
+                console.log("Saved");
+
+            }
+            catch (error) {
+
+                console.log(error);
+
+            }
+
+        }
+// Right Click Disable
+document.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+});
+
+// Copy Disable
+document.addEventListener("copy", function(e){
+    e.preventDefault();
+});
+
+// Cut Disable
+document.addEventListener("cut", function(e){
+    e.preventDefault();
+});
+
+// Paste Disable
+document.addEventListener("paste", function(e){
+    e.preventDefault();
+});
+
+// Developer Tools Disable
+document.addEventListener("keydown", function(e){
+
+    if(e.key === "F12"){
+        e.preventDefault();
+    }
+
+    if(e.ctrlKey && e.shiftKey && e.key === "I"){
+        e.preventDefault();
+    }
+
+    if(e.ctrlKey && e.shiftKey && e.key === "J"){
+        e.preventDefault();
+    }
+
+    if(e.ctrlKey && e.shiftKey && e.key === "C"){
+        e.preventDefault();
+    }
+
+    if(e.ctrlKey && e.key === "U"){
+        e.preventDefault();
+    }
+
+});
+
+// Full Screen Exit Detect
+document.addEventListener("fullscreenchange", function(){
+
+    if(!document.fullscreenElement){
+
+        alert("Fullscreen Exit Detected");
+
+        showResult();
+
+    }
+
+});
+
+// Tab Change Detect
+document.addEventListener("visibilitychange", function(){
+
+    if(document.hidden){
+
+        alert("Tab Change Detected");
+
+        showResult();
+
+    }
+
+});
+    </script>
+</body>
+
+</html>
